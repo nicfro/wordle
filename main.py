@@ -1,9 +1,11 @@
 from random import sample
 import json
-
+from collections import namedtuple
 
 regex_not = "(?:^|(?<= ))([^dr]+)(?:\n|(?= )|$)"
 regex_contains = "(\b\S\S\Se\S)+"
+
+
 class Wordle:
     def __init__(self, word_length):
         all_words = open("words.json", "r")
@@ -13,25 +15,22 @@ class Wordle:
         self.word_options = len(self.dictionary)
         self.combinations = []
 
-    def guess(self, candidate_word):
-        correct = []
-        contains = []
-        not_in = []
-        temp_word = self.word
+    def guess(candidate_word, word):
+        result = []
+        Rule = namedtuple('Rule', 'rule_name letter index')
         for i in range(len(candidate_word)):
             letter = candidate_word[i]
-            if letter == temp_word[i]:
-                correct.append((letter, i))
-                idx = temp_word.find(letter)
-                temp_word = temp_word[0:idx]+"?"+temp_word[idx+1:]
-            elif letter in temp_word:
-                contains.append((letter, i))
-                idx = temp_word.find(letter)
-                temp_word = temp_word[0:idx]+"?"+temp_word[idx+1:]
+            if letter == word[i]:
+                result.append(Rule("correct", letter, i))
+                idx = word.find(letter)
+                word = word[0:idx]+"?"+word[idx+1:]
+            elif letter in word:
+                result.append(Rule("contains", letter, i))
+                idx = word.find(letter)
+                word = word[0:idx]+"?"+word[idx+1:]
             else:
-                not_in.append(letter)
-
-        return correct, contains, not_in
+                result.append(Rule("not_in", letter, i))
+        return result
     
 
 test = Wordle(5)
